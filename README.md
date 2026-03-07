@@ -3,6 +3,7 @@
 > Interface graphique bleu néon futuriste pour [nullclaw](https://github.com/nullclaw/nullclaw) — un assistant IA autonome ultra-léger tourné 100% en local sur Linux.
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+![Version](https://img.shields.io/badge/version-1.6.0-cyan.svg)
 ![Platform: Linux](https://img.shields.io/badge/platform-Linux%20Debian%2FDevuan-informational)
 ![Python: 3](https://img.shields.io/badge/python-3-green.svg)
 
@@ -16,18 +17,20 @@
 
 Interface terminal cyberpunk bleu néon avec :
 - Séquence de boot animée
-- Zone de chat avec historique
+- **Avatar animé** de l'agent en haut à droite — s'anime quand il travaille
+- Zone de chat avec **historique des conversations** rechargé au démarrage
 - Barre de saisie avec glow effect
 - Bouton `+` pour envoyer des fichiers dans `drops/`
-- Démarrage automatique d'Ollama et nullclaw
+- Provider et modèle affichés **automatiquement** depuis `config.json`
+- Démarrage automatique d'Ollama **seulement si nécessaire** (pas avec Gemini, DeepSeek, etc.)
 
 ---
 
 ## 🧩 Prérequis
 
 - Linux Debian / Devuan / Peppermint OS (x86_64)
-- Python 3 + python3-tk + python3-pexpect
-- [Ollama](https://ollama.com) installé
+- Python 3 + python3-tk + python3-pexpect + python3-pil + python3-pil.imagetk
+- [Ollama](https://ollama.com) installé (optionnel — seulement pour modèles locaux ou cloud Ollama)
 - nullclaw compilé (voir installation ci-dessous)
 - Au moins **2 Go d'espace libre** et **4 Go de RAM**
 
@@ -35,7 +38,10 @@ Interface terminal cyberpunk bleu néon avec :
 
 ## ⚙️ Installation complète — de A à Z
 
-### Étape 1 — Installer Ollama
+### Étape 1 — Installer Ollama (optionnel)
+
+Ollama est nécessaire seulement si tu utilises un modèle local ou cloud via Ollama.
+Si tu utilises Gemini, DeepSeek, Groq ou OpenRouter directement, tu peux sauter cette étape.
 
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
@@ -49,25 +55,27 @@ ollama --version
 
 ---
 
-### Étape 2 — Télécharger un modèle IA
+### Étape 2 — Choisir un provider et un modèle IA
 
-Ce projet utilise **kimi-k2.5:cloud** par défaut — c'est une passerelle gratuite vers un modèle cloud puissant via Ollama, sans clé API :
+nullclaw supporte 30+ providers. Voici les meilleures options gratuites ou peu coûteuses :
 
-```bash
-ollama pull kimi-k2.5:cloud
-```
+#### Providers cloud recommandés (sans Ollama)
 
-#### Autres modèles compatibles
+| Provider | Modèle recommandé | Limite gratuite |
+|----------|-------------------|-----------------|
+| **Google Gemini** | gemini-2.5-flash | 1500 req/jour |
+| **DeepSeek** | deepseek-chat | ~2€ pour des millions de tokens |
+| **Groq** | llama-3.3-70b-versatile | 14 400 req/jour |
+| **OpenRouter** | llama-3.3-70b | Tier gratuit |
 
-Tu peux utiliser n'importe quel modèle Ollama. Voici quelques suggestions selon ta RAM :
+#### Modèles locaux via Ollama (100% hors-ligne)
 
 | RAM disponible | Modèle recommandé | Commande |
 |----------------|-------------------|----------|
-| < 2 Go | smollm:1.7b (local, rapide) | `ollama pull smollm:1.7b` |
-| 2-4 Go | gemma2:2b (local, qualité) | `ollama pull gemma2:2b` |
-| 2-4 Go | granite3.3:2b (local, raisonnement) | `ollama pull granite3.3:2b` |
-| 4+ Go | kimi-k2.5:cloud (cloud gratuit, puissant) | `ollama pull kimi-k2.5:cloud` |
-| 4+ Go | kimi-k2-thinking:cloud (cloud, réfléchi) | `ollama pull kimi-k2-thinking:cloud` |
+| < 2 Go | smollm:1.7b | `ollama pull smollm:1.7b` |
+| 2-4 Go | gemma2:2b | `ollama pull gemma2:2b` |
+| 2-4 Go | deepseek-coder:1.3b (code) | `ollama pull deepseek-coder:1.3b` |
+| 4+ Go | kimi-k2.5:cloud (cloud gratuit) | `ollama pull kimi-k2.5:cloud` |
 
 > ⚠️ Les modèles `:cloud` nécessitent une connexion internet. Les modèles locaux fonctionnent 100% hors-ligne.
 
@@ -122,14 +130,14 @@ cd ~/nullclaw/app
 
 Réponses recommandées dans le wizard :
 
-| Étape | Choix |
-|-------|-------|
-| Provider | `ollama` |
-| API Key | Entrée (vide — pas besoin avec Ollama) |
-| Modèle | `kimi-k2.5:cloud` ou ton modèle choisi |
+| Étape | Choix recommandé |
+|-------|-----------------|
+| Provider | Ton choix (Google Gemini, DeepSeek, Ollama...) |
+| API Key | Ta clé API (ou Entrée si Ollama local) |
+| Modèle | Le modèle de ton provider |
 | Memory backend | `1` — SQLite (recommandé) |
 | Tunnel | `1` — none |
-| Autonomy level | `1` — supervised |
+| **Autonomy level** | **`2` — full** (recommandé pour coder) |
 | Configure channels | `n` |
 | Workspace path | `/home/TON_USER/nullclaw/workspace` |
 
@@ -155,24 +163,25 @@ Tu te souviens de mes préférences au fil du temps.
 
 ---
 
-### Étape 7 — Installer nullclaw-neural-interface
-
-Télécharge le `.deb` depuis les [Releases](../../releases) puis :
+### Étape 7 — Installer les dépendances Python
 
 ```bash
-sudo dpkg -i nullclaw-ui_1.3.0_all.deb
-```
-
-Si des dépendances manquent :
-
-```bash
-sudo apt install python3 python3-tk python3-pexpect
-sudo dpkg -i nullclaw-ui_1.3.0_all.deb
+sudo apt install python3 python3-tk python3-pexpect python3-pil python3-pil.imagetk
 ```
 
 ---
 
-### Étape 8 — Adapter les chemins
+### Étape 8 — Installer nullclaw-neural-interface
+
+Télécharge le `.deb` depuis les [Releases](../../releases) puis :
+
+```bash
+sudo dpkg -i nullclaw-ui_1.6.0_all.deb
+```
+
+---
+
+### Étape 9 — Adapter les chemins
 
 Par défaut, l'interface cherche nullclaw dans :
 
@@ -203,6 +212,26 @@ nullclaw-ui
 ```
 
 Ou depuis le menu Applications de ton bureau.
+
+---
+
+## 🎨 Avatar de l'agent
+
+L'interface affiche un avatar animé (GIF) de ton agent en haut à droite du header :
+- **Animé** quand l'agent travaille sur ta question
+- **Idle** (frame 1) quand il a répondu
+
+Les fichiers avatar sont dans `/usr/share/nullclaw/` :
+- `andre.gif` — animation
+- `andre_static.png` — image statique
+
+Pour personnaliser, remplace ces fichiers par tes propres images (même nom, taille recommandée : 64x95px).
+
+---
+
+## 💬 Historique des conversations
+
+L'historique est sauvegardé dans `~/.nullclaw/ui_history.json` et rechargé automatiquement au démarrage avec dates et heures. Le bouton **⟳ CLEAR** en haut à droite efface l'historique affiché et sauvegardé.
 
 ---
 
@@ -265,10 +294,27 @@ chmod +x ~/Desktop/nullclaw.desktop
 
 ```
 nullclaw-neural-interface/
-├── nullclaw-ui_1.3.0_all.deb   # Package installable
+├── nullclaw-ui_1.6.0_all.deb   # Package installable
+├── André.png                    # Avatar statique
+├── andre.gif                    # Avatar animé
+├── screenshot.png               # Aperçu de l'interface
 ├── LICENSE                      # MIT
 └── README.md                    # Ce fichier
 ```
+
+---
+
+## 📝 Changelog
+
+| Version | Nouveautés |
+|---------|-----------|
+| **v1.6.0** | Avatar animé GIF — s'anime quand l'agent travaille |
+| **v1.5.0** | Historique des conversations sauvegardé + bouton CLEAR |
+| **v1.4.0** | Lit config.json automatiquement — provider/modèle dynamiques |
+| **v1.3.0** | Bouton + pour envoyer des fichiers dans drops/ |
+| **v1.2.0** | Parsing correct du output nullclaw via pexpect |
+| **v1.1.0** | Intégration pexpect pour TTY virtuel |
+| **v1.0.0** | Release initiale — interface bleu néon futuriste |
 
 ---
 
