@@ -28,7 +28,7 @@ Interface terminal cyberpunk bleu néon avec :
 
 ## 🧩 Prérequis
 
-- Linux Debian / Devuan / Peppermint OS (x86_64)
+- Linux Debian / Devuan
 - Python 3 + python3-tk + python3-pexpect + python3-pil + python3-pil.imagetk
 - [Ollama](https://ollama.com) installé (optionnel — seulement pour modèles locaux ou cloud Ollama)
 - nullclaw compilé (voir installation ci-dessous)
